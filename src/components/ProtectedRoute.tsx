@@ -13,8 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   useEffect(() => {
     // Check if user is logged in
     const username = localStorage.getItem('username');
-    const password = localStorage.getItem('password');
-    setIsAuthenticated(!!(username && password));
+    setIsAuthenticated(!!username);
   }, []);
 
   // Show loading state while checking authentication
