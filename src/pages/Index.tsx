@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ChatList from '@/components/ChatList';
 import MessageContainer from '@/components/MessageContainer';
-import { Chat, Message, generateMockChats, generateMockMessage } from '@/utils/messageUtils';
+import { Chat, Message } from '@/utils/messageUtils';
 import { PageTransition } from '@/components/Transitions';
 import { toast } from "sonner";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -13,7 +13,7 @@ const Index = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -22,72 +22,55 @@ const Index = () => {
   useEffect(() => {
     const storedUsername = localStorage.getItem('username') || 'anonymous_user';
     setUsername(storedUsername);
+    setLoading(false);
   }, []);
-
-  // Load chats once on component mount
-  useEffect(() => {
-    const loadChats = () => {
-      // Simulate loading chats from API
-      const timer = setTimeout(() => {
-        const mockChats = generateMockChats(15);
-        setChats(mockChats);
-        setLoading(false);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    };
-
-    loadChats();
-  }, []);
-  
-  // Load messages when active chat changes
-  const loadMessages = useCallback((chatId: string) => {
-    const activeChat = chats.find(chat => chat.id === chatId);
-    if (!activeChat) return;
-    
-    // Simulate loading messages for the active chat
-    const mockMessages: Message[] = [];
-    const messageCount = Math.floor(Math.random() * 20) + 5;
-    const otherUser = activeChat.participants.find(p => p.id !== 'current');
-    
-    if (otherUser) {
-      for (let i = 0; i < messageCount; i++) {
-        if (Math.random() > 0.5) {
-          mockMessages.push(generateMockMessage('current', otherUser.id));
-        } else {
-          mockMessages.push(generateMockMessage(otherUser.id, 'current'));
-        }
-      }
-      
-      mockMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-      setMessages(mockMessages);
-      
-      // Mark messages as read
-      setChats(prevChats => 
-        prevChats.map(chat => 
-          chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-        )
-      );
-    }
-  }, [chats]);
-  
-  // Effect to load messages when active chat changes
-  useEffect(() => {
-    if (activeChatId) {
-      loadMessages(activeChatId);
-    }
-  }, [activeChatId, loadMessages]);
   
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
+    
+    // Find the chat and its messages
+    const activeChat = chats.find(chat => chat.id === chatId);
+    if (!activeChat) return;
+    
+    // Load the messages for this chat
+    // In a real app, you would fetch these from your backend
+    const chatMessages = activeChat.messages || [];
+    setMessages(chatMessages);
+    
+    // Mark messages as read
+    setChats(prevChats => 
+      prevChats.map(chat => 
+        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+      )
+    );
   };
   
   const handleNewChat = () => {
-    toast.info("Creating a new conversation");
-    // Generate a new chat with a random user
-    const newChat = generateMockChats(1)[0];
+    // Get username of the current user
+    const currentUsername = localStorage.getItem('username') || 'anonymous_user';
+    
+    // In a real app, you would create a new chat with another user
+    // For demo purposes, create a chat with "Echo Bot"
+    const newChatId = `chat_${Date.now()}`;
+    
+    const newChat: Chat = {
+      id: newChatId,
+      type: 'direct',
+      participants: [
+        { id: 'current', username: currentUsername, status: 'online' },
+        { id: 'echo_bot', username: 'Echo Bot', status: 'online' }
+      ],
+      unreadCount: 0,
+      createdAt: new Date(),
+      messages: [],
+      isAnonymous: true,
+    };
+    
     setChats(prev => [newChat, ...prev]);
-    setActiveChatId(newChat.id);
+    setActiveChatId(newChatId);
+    setMessages([]);
+    
+    toast.info("Created a new conversation with Echo Bot");
   };
   
   const handleSettings = () => {
@@ -113,94 +96,103 @@ const Index = () => {
       isDeleted: false
     };
     
+    // Add message to messages list
     setMessages(prev => [...prev, newMessage]);
     
-    // Update the last message in the chat
+    // Update the messages in the chat
     setChats(prevChats => 
-      prevChats.map(chat => 
-        chat.id === activeChatId ? { 
-          ...chat, 
-          lastMessage: newMessage 
-        } : chat
-      )
+      prevChats.map(chat => {
+        if (chat.id === activeChatId) {
+          const updatedMessages = [...(chat.messages || []), newMessage];
+          return { 
+            ...chat, 
+            messages: updatedMessages,
+            lastMessage: newMessage 
+          };
+        }
+        return chat;
+      })
     );
     
     // Simulate message being delivered after 1 second
     setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
-        )
-      );
-      
-      setChats(prevChats => 
-        prevChats.map(chat => 
-          chat.id === activeChatId && chat.lastMessage?.id === newMessage.id ? { 
-            ...chat, 
-            lastMessage: { ...newMessage, status: 'delivered' } 
-          } : chat
-        )
-      );
+      const deliveredMessage = { ...newMessage, status: 'delivered' };
+      updateMessageStatus(deliveredMessage);
     }, 1000);
     
     // Simulate message being read after 2 seconds
     setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
-        )
-      );
+      const readMessage = { ...newMessage, status: 'read' };
+      updateMessageStatus(readMessage);
       
-      setChats(prevChats => 
-        prevChats.map(chat => 
-          chat.id === activeChatId && chat.lastMessage?.id === newMessage.id ? { 
-            ...chat, 
-            lastMessage: { ...newMessage, status: 'read' } 
-          } : chat
-        )
-      );
-    }, 2000);
-    
-    // Simulate reply after 3 seconds
-    setTimeout(() => {
-      if (Math.random() > 0.3) {
-        const replyMessages = [
-          "That's interesting!",
-          "I see what you mean.",
-          "Thanks for sharing that.",
-          "I'll think about it.",
-          "Great point!",
-          "What else is on your mind?",
-          "I appreciate you telling me.",
-          "That makes sense.",
-          "I hadn't thought of it that way.",
-          "Let's discuss this more."
-        ];
-        
-        const replyContent = replyMessages[Math.floor(Math.random() * replyMessages.length)];
-        
-        const replyMessage: Message = {
-          id: `msg_${Date.now()}`,
-          content: replyContent,
-          senderId: otherUser.id,
-          receiverId: 'current',
-          timestamp: new Date(),
-          status: 'sent',
-          isDeleted: false
-        };
-        
-        setMessages(prev => [...prev, replyMessage]);
-        
-        setChats(prevChats => 
-          prevChats.map(chat => 
-            chat.id === activeChatId ? { 
-              ...chat, 
-              lastMessage: replyMessage 
-            } : chat
-          )
-        );
+      // For Echo Bot, generate a reply
+      if (otherUser.id === 'echo_bot') {
+        setTimeout(() => {
+          sendEchoBotReply(content, otherUser.id);
+        }, 1000);
       }
-    }, 3000);
+    }, 2000);
+  };
+  
+  const updateMessageStatus = (updatedMessage: Message) => {
+    // Update in messages array
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === updatedMessage.id ? updatedMessage : msg
+      )
+    );
+    
+    // Update in chats array
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        if (chat.id === activeChatId) {
+          const updatedMessages = (chat.messages || []).map(msg => 
+            msg.id === updatedMessage.id ? updatedMessage : msg
+          );
+          
+          return { 
+            ...chat, 
+            messages: updatedMessages,
+            lastMessage: chat.lastMessage?.id === updatedMessage.id ? 
+              updatedMessage : chat.lastMessage
+          };
+        }
+        return chat;
+      })
+    );
+  };
+  
+  const sendEchoBotReply = (originalContent: string, botId: string) => {
+    // Generate Echo Bot reply
+    let replyContent = `You said: "${originalContent}"`;
+    
+    const replyMessage: Message = {
+      id: `msg_${Date.now()}`,
+      content: replyContent,
+      senderId: botId,
+      receiverId: 'current',
+      timestamp: new Date(),
+      status: 'sent',
+      isDeleted: false
+    };
+    
+    // Add to messages
+    setMessages(prev => [...prev, replyMessage]);
+    
+    // Update in chats
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        if (chat.id === activeChatId) {
+          const updatedMessages = [...(chat.messages || []), replyMessage];
+          return { 
+            ...chat, 
+            messages: updatedMessages,
+            lastMessage: replyMessage 
+          };
+        }
+        return chat;
+      })
+    );
   };
   
   const handleDeleteMessage = (messageId: string) => {
@@ -211,18 +203,24 @@ const Index = () => {
       )
     );
     
-    // If the deleted message is the last message in the chat, update the chat
-    const activeChat = chats.find(chat => chat.id === activeChatId);
-    if (activeChat?.lastMessage?.id === messageId) {
-      setChats(prevChats => 
-        prevChats.map(chat => 
-          chat.id === activeChatId ? { 
+    // Update in chats array
+    setChats(prevChats => 
+      prevChats.map(chat => {
+        if (chat.id === activeChatId) {
+          const updatedMessages = (chat.messages || []).map(msg => 
+            msg.id === messageId ? { ...msg, isDeleted: true } : msg
+          );
+          
+          return { 
             ...chat, 
-            lastMessage: { ...chat.lastMessage!, isDeleted: true } 
-          } : chat
-        )
-      );
-    }
+            messages: updatedMessages,
+            lastMessage: chat.lastMessage?.id === messageId ? 
+              { ...chat.lastMessage, isDeleted: true } : chat.lastMessage
+          };
+        }
+        return chat;
+      })
+    );
     
     toast.success("Message deleted");
   };
@@ -260,12 +258,23 @@ const Index = () => {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : chats.length > 0 ? (
               <ChatList 
                 chats={chats}
                 activeChat={activeChatId || undefined}
                 onSelectChat={handleSelectChat}
               />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 text-center">
+                <p className="text-muted-foreground mb-4">No conversations yet</p>
+                <Button 
+                  onClick={handleNewChat}
+                  size="sm"
+                  variant="outline"
+                >
+                  Start a new conversation
+                </Button>
+              </div>
             )}
           </div>
         </div>

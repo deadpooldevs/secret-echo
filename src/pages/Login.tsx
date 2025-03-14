@@ -9,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { PageTransition } from '@/components/Transitions';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react';
+import { ArrowLeft, ArrowRight, MessageSquare, Eye, EyeOff } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
@@ -23,16 +23,22 @@ const formSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, {
       message: "Username can only contain letters, numbers, and underscores",
     }),
+  password: z.string()
+    .min(6, {
+      message: "Password must be at least 6 characters long",
+    })
 });
 
 const Login = () => {
   const [step, setStep] = useState<'welcome' | 'register'>('welcome');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
+      password: ""
     },
   });
   
@@ -41,12 +47,14 @@ const Login = () => {
   };
   
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // In a real app, you would validate the username against your database
-    // and then create a new user or log in an existing one
+    // In a real app, you would validate the username/password against your database
     toast.success(`Welcome to Echo, ${values.username}!`);
     
-    // Store the username in localStorage for now
+    // Store the username and a hashed version of the password in localStorage
     localStorage.setItem('username', values.username);
+    // In a real app, you would never store the raw password!
+    // This is just for demo purposes
+    localStorage.setItem('password', btoa(values.password));
     
     // Navigate to the home page
     navigate("/");
@@ -135,6 +143,39 @@ const Login = () => {
                           className="shrink-0"
                         >
                           Random
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <div className="relative">
+                        <FormControl>
+                          <Input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="Create a password" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-0 top-0 h-full px-3"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                       <FormMessage />

@@ -47,6 +47,7 @@ export interface Chat {
   name?: string; // for group chats
   isAnonymous?: boolean;
   theme?: string;
+  messages?: Message[]; // Add messages array to store chat history
 }
 
 // Demo data generators
