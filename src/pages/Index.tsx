@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ChatList from '@/components/ChatList';
 import MessageContainer from '@/components/MessageContainer';
@@ -13,9 +13,10 @@ const Index = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState('anonymous_user');
+  const [username, setUsername] = useState(localStorage.getItem('username') || 'anonymous_user');
   const isMobile = useIsMobile();
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Simulate loading chats from API
     const timer = setTimeout(() => {
@@ -68,7 +69,7 @@ const Index = () => {
   };
   
   const handleSettings = () => {
-    toast.info("Settings functionality coming soon");
+    navigate('/settings');
   };
   
   const handleSendMessage = (content: string) => {

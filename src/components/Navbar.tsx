@@ -4,6 +4,7 @@ import { Search, Plus, Settings, Menu, X } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import { cn } from '@/lib/utils';
 import { SlideUp } from './Transitions';
+import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   username: string;
@@ -14,6 +15,12 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ username, onNewChat, onSettings }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+    onSettings();
+  };
 
   return (
     <div className="sticky top-0 z-10 w-full bg-background/80 backdrop-blur-md border-b">
@@ -61,7 +68,7 @@ const Navbar: React.FC<NavbarProps> = ({ username, onNewChat, onSettings }) => {
 
               <button
                 className="flex items-center justify-center p-2 rounded-full hover:bg-secondary transition-colors"
-                onClick={onSettings}
+                onClick={handleSettingsClick}
               >
                 <Settings size={18} />
               </button>
@@ -69,7 +76,12 @@ const Navbar: React.FC<NavbarProps> = ({ username, onNewChat, onSettings }) => {
           </div>
         </div>
 
-        <UserAvatar username={username} status="online" size="sm" />
+        <UserAvatar 
+          username={username} 
+          status="online" 
+          size="sm" 
+          onClick={handleSettingsClick}
+        />
       </div>
     </div>
   );
