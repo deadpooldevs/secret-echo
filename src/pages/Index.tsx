@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ChatList from '@/components/ChatList';
@@ -13,59 +14,80 @@ const Index = () => {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState(localStorage.getItem('username') || 'anonymous_user');
+  const [username, setUsername] = useState('');
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
+  // Load username from localStorage once on component mount
   useEffect(() => {
-    // Simulate loading chats from API
-    const timer = setTimeout(() => {
-      const mockChats = generateMockChats(15);
-      setChats(mockChats);
-      setLoading(false);
-    }, 500);
-    
-    return () => clearTimeout(timer);
+    const storedUsername = localStorage.getItem('username') || 'anonymous_user';
+    setUsername(storedUsername);
+  }, []);
+
+  // Load chats once on component mount
+  useEffect(() => {
+    const loadChats = () => {
+      // Simulate loading chats from API
+      const timer = setTimeout(() => {
+        const mockChats = generateMockChats(15);
+        setChats(mockChats);
+        setLoading(false);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    };
+
+    loadChats();
   }, []);
   
-  useEffect(() => {
-    if (activeChatId) {
-      const activeChat = chats.find(chat => chat.id === activeChatId);
-      if (activeChat) {
-        // Simulate loading messages for the active chat
-        const mockMessages: Message[] = [];
-        const messageCount = Math.floor(Math.random() * 20) + 5;
-        const otherUser = activeChat.participants.find(p => p.id !== 'current');
-        
-        if (otherUser) {
-          for (let i = 0; i < messageCount; i++) {
-            if (Math.random() > 0.5) {
-              mockMessages.push(generateMockMessage('current', otherUser.id));
-            } else {
-              mockMessages.push(generateMockMessage(otherUser.id, 'current'));
-            }
-          }
-          
-          mockMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-          setMessages(mockMessages);
-          
-          // Mark messages as read
-          setChats(prevChats => 
-            prevChats.map(chat => 
-              chat.id === activeChatId ? { ...chat, unreadCount: 0 } : chat
-            )
-          );
+  // Load messages when active chat changes
+  const loadMessages = useCallback((chatId: string) => {
+    const activeChat = chats.find(chat => chat.id === chatId);
+    if (!activeChat) return;
+    
+    // Simulate loading messages for the active chat
+    const mockMessages: Message[] = [];
+    const messageCount = Math.floor(Math.random() * 20) + 5;
+    const otherUser = activeChat.participants.find(p => p.id !== 'current');
+    
+    if (otherUser) {
+      for (let i = 0; i < messageCount; i++) {
+        if (Math.random() > 0.5) {
+          mockMessages.push(generateMockMessage('current', otherUser.id));
+        } else {
+          mockMessages.push(generateMockMessage(otherUser.id, 'current'));
         }
       }
+      
+      mockMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      setMessages(mockMessages);
+      
+      // Mark messages as read
+      setChats(prevChats => 
+        prevChats.map(chat => 
+          chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+        )
+      );
     }
-  }, [activeChatId, chats]);
+  }, [chats]);
+  
+  // Effect to load messages when active chat changes
+  useEffect(() => {
+    if (activeChatId) {
+      loadMessages(activeChatId);
+    }
+  }, [activeChatId, loadMessages]);
   
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
   };
   
   const handleNewChat = () => {
-    toast.info("New chat functionality coming soon");
+    toast.info("Creating a new conversation");
+    // Generate a new chat with a random user
+    const newChat = generateMockChats(1)[0];
+    setChats(prev => [newChat, ...prev]);
+    setActiveChatId(newChat.id);
   };
   
   const handleSettings = () => {
@@ -138,6 +160,47 @@ const Index = () => {
         )
       );
     }, 2000);
+    
+    // Simulate reply after 3 seconds
+    setTimeout(() => {
+      if (Math.random() > 0.3) {
+        const replyMessages = [
+          "That's interesting!",
+          "I see what you mean.",
+          "Thanks for sharing that.",
+          "I'll think about it.",
+          "Great point!",
+          "What else is on your mind?",
+          "I appreciate you telling me.",
+          "That makes sense.",
+          "I hadn't thought of it that way.",
+          "Let's discuss this more."
+        ];
+        
+        const replyContent = replyMessages[Math.floor(Math.random() * replyMessages.length)];
+        
+        const replyMessage: Message = {
+          id: `msg_${Date.now()}`,
+          content: replyContent,
+          senderId: otherUser.id,
+          receiverId: 'current',
+          timestamp: new Date(),
+          status: 'sent',
+          isDeleted: false
+        };
+        
+        setMessages(prev => [...prev, replyMessage]);
+        
+        setChats(prevChats => 
+          prevChats.map(chat => 
+            chat.id === activeChatId ? { 
+              ...chat, 
+              lastMessage: replyMessage 
+            } : chat
+          )
+        );
+      }
+    }, 3000);
   };
   
   const handleDeleteMessage = (messageId: string) => {

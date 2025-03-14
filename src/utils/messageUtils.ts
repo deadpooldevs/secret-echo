@@ -59,7 +59,7 @@ export const generateRandomUser = (id?: string): User => {
   ];
   
   const username = id ? 
-    usernames[parseInt(id) % usernames.length] : 
+    usernames[parseInt(id.replace(/\D/g, '')) % usernames.length] : 
     usernames[Math.floor(Math.random() * usernames.length)];
     
   const statuses: Array<'online' | 'offline' | 'away'> = ['online', 'offline', 'away'];
@@ -95,6 +95,34 @@ export const generateMockMessage = (senderId: string, receiverId: string): Messa
   const content = messageContents[Math.floor(Math.random() * messageContents.length)];
   const timestamp = new Date(Date.now() - Math.random() * 86400000);
   
+  // Sometimes add attachments
+  const hasAttachment = Math.random() > 0.8;
+  let attachments: Attachment[] | undefined = undefined;
+  
+  if (hasAttachment) {
+    const attachmentTypes: Array<'image' | 'video' | 'audio' | 'file'> = ['image', 'video', 'audio', 'file'];
+    const type = attachmentTypes[Math.floor(Math.random() * attachmentTypes.length)];
+    
+    const imageUrls = [
+      'https://picsum.photos/800/600',
+      'https://picsum.photos/700/500',
+      'https://picsum.photos/600/800',
+      'https://picsum.photos/500/500',
+      'https://picsum.photos/900/600'
+    ];
+    
+    const names = ["photo.jpg", "screenshot.png", "document.pdf", "video.mp4", "voice.mp3"];
+    
+    attachments = [{
+      id: Math.random().toString(36).substring(2, 10),
+      type,
+      url: type === 'image' ? imageUrls[Math.floor(Math.random() * imageUrls.length)] : '#',
+      name: names[Math.floor(Math.random() * names.length)],
+      size: Math.floor(Math.random() * 5000000) + 50000, // Random size between 50KB and 5MB
+      thumbnailUrl: type === 'video' ? imageUrls[Math.floor(Math.random() * imageUrls.length)] : undefined
+    }];
+  }
+  
   return {
     id: Math.random().toString(36).substring(2, 15),
     content,
@@ -104,6 +132,7 @@ export const generateMockMessage = (senderId: string, receiverId: string): Messa
     status: Math.random() > 0.5 ? 'read' : (Math.random() > 0.5 ? 'delivered' : 'sent'),
     isDeleted: Math.random() > 0.95,
     isForwarded: Math.random() > 0.9,
+    attachments,
     reactions: Math.random() > 0.7 ? [{
       userId: receiverId,
       emoji: ['👍', '❤️', '😂', '😮', '🎉', '👏', '🔥'][Math.floor(Math.random() * 7)],
@@ -166,5 +195,17 @@ export const formatMessageTime = (date: Date): string => {
     return date.toLocaleDateString([], { weekday: 'short' });
   } else {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  }
+};
+
+export const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) {
+    return bytes + ' bytes';
+  } else if (bytes < 1024 * 1024) {
+    return (bytes / 1024).toFixed(1) + ' KB';
+  } else if (bytes < 1024 * 1024 * 1024) {
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  } else {
+    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
   }
 };

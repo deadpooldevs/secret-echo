@@ -1,218 +1,133 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, LogOut, Shield, BellRing, Palette, Lock, User } from 'lucide-react';
+import { toast } from "sonner";
 import { PageTransition } from '@/components/Transitions';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import Navbar from '@/components/Navbar';
-import UserAvatar from '@/components/UserAvatar';
-import { toast } from 'sonner';
-import { 
-  ArrowLeft, 
-  Bell, 
-  Eye, 
-  Lock, 
-  Paintbrush, 
-  Save, 
-  Trash, 
-  UserRound 
-} from 'lucide-react';
+import ProfileForm from '@/components/ProfileForm';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const storedUsername = localStorage.getItem('username') || '';
   
-  const [username, setUsername] = useState(storedUsername);
-  const [settings, setSettings] = useState({
-    notifications: true,
-    lastSeen: true,
-    typingIndicators: true,
-    anonymousMode: false,
-    darkTheme: window.matchMedia('(prefers-color-scheme: dark)').matches
-  });
+  const handleLogout = () => {
+    localStorage.removeItem('username');
+    toast.success('Logged out successfully');
+    navigate('/login');
+  };
   
   const handleBack = () => {
     navigate('/');
   };
-  
-  const handleSave = () => {
-    // Save username to localStorage
-    localStorage.setItem('username', username);
-    
-    // In a real app, you would save these settings to a database
-    toast.success('Settings saved successfully');
-  };
-  
-  const handleLogout = () => {
-    localStorage.removeItem('username');
-    navigate('/login');
-    toast.info('You have been logged out');
-  };
-  
-  const handleToggle = (setting: keyof typeof settings) => {
-    setSettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
-  };
-  
+
   return (
-    <PageTransition className="flex flex-col min-h-screen bg-background">
-      <Navbar 
-        username={username}
-        onNewChat={() => navigate('/')}
-        onSettings={() => {}}
-      />
-      
-      <div className="container max-w-md mx-auto p-4 flex-1">
-        <div className="flex items-center mb-6">
-          <button 
-            onClick={handleBack}
-            className="p-2 mr-2 hover:bg-secondary rounded-full transition-colors"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-2xl font-bold">Settings</h1>
+    <PageTransition className="min-h-screen bg-background">
+      <div className="container mx-auto py-6 max-w-5xl">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={handleBack}>
+              <ArrowLeft size={20} />
+            </Button>
+            <h1 className="text-2xl font-semibold">Settings</h1>
+          </div>
+          
+          <Button variant="destructive" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
         </div>
         
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <UserAvatar username={username} size="lg" />
+        <Tabs defaultValue="profile">
+          <TabsList className="mb-6">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User size={16} />
+              <span>Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center gap-2">
+              <Lock size={16} />
+              <span>Privacy</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <BellRing size={16} />
+              <span>Notifications</span>
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="flex items-center gap-2">
+              <Palette size={16} />
+              <span>Appearance</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Shield size={16} />
+              <span>Security</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="bg-card rounded-lg border shadow-sm p-6">
+            <TabsContent value="profile" className="mt-0">
+              <ProfileForm />
+            </TabsContent>
+            
+            <TabsContent value="privacy" className="mt-0 space-y-6">
               <div>
-                <h2 className="font-medium">{username}</h2>
-                <p className="text-sm text-muted-foreground">Anonymous User</p>
-              </div>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <UserRound className="w-5 h-5 mr-3 text-primary" />
-              <h3 className="text-lg font-medium">Profile</h3>
-            </div>
-            
-            <div className="space-y-3 pl-8">
-              <div className="space-y-1">
-                <Label htmlFor="username">Username</Label>
-                <Input 
-                  id="username" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <Bell className="w-5 h-5 mr-3 text-primary" />
-              <h3 className="text-lg font-medium">Notifications</h3>
-            </div>
-            
-            <div className="space-y-3 pl-8">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="notifications" className="flex-1">Push notifications</Label>
-                <Switch 
-                  id="notifications" 
-                  checked={settings.notifications} 
-                  onCheckedChange={() => handleToggle('notifications')}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <Eye className="w-5 h-5 mr-3 text-primary" />
-              <h3 className="text-lg font-medium">Privacy</h3>
-            </div>
-            
-            <div className="space-y-3 pl-8">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="lastSeen" className="flex-1">Last seen status</Label>
-                <Switch 
-                  id="lastSeen" 
-                  checked={settings.lastSeen} 
-                  onCheckedChange={() => handleToggle('lastSeen')}
-                />
+                <h3 className="text-lg font-medium">Privacy Settings</h3>
+                <p className="text-sm text-muted-foreground">
+                  Manage how your information is handled and who can contact you.
+                </p>
               </div>
               
-              <div className="flex items-center justify-between">
-                <Label htmlFor="typingIndicators" className="flex-1">Typing indicators</Label>
-                <Switch 
-                  id="typingIndicators" 
-                  checked={settings.typingIndicators} 
-                  onCheckedChange={() => handleToggle('typingIndicators')}
-                />
+              <div className="py-4">
+                <p className="text-muted-foreground text-center">
+                  Privacy settings coming soon in the next update.
+                </p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="notifications" className="mt-0 space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Notification Preferences</h3>
+                <p className="text-sm text-muted-foreground">
+                  Control which notifications you receive and how.
+                </p>
               </div>
               
-              <div className="flex items-center justify-between">
-                <Label htmlFor="anonymousMode" className="flex-1">
-                  <div className="space-y-0.5">
-                    <div>Anonymous mode</div>
-                    <div className="text-xs text-muted-foreground">Become untraceable except to active chats</div>
-                  </div>
-                </Label>
-                <Switch 
-                  id="anonymousMode" 
-                  checked={settings.anonymousMode} 
-                  onCheckedChange={() => handleToggle('anonymousMode')}
-                />
+              <div className="py-4">
+                <p className="text-muted-foreground text-center">
+                  Notification settings coming soon in the next update.
+                </p>
               </div>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <Paintbrush className="w-5 h-5 mr-3 text-primary" />
-              <h3 className="text-lg font-medium">Appearance</h3>
-            </div>
+            </TabsContent>
             
-            <div className="space-y-3 pl-8">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="darkTheme" className="flex-1">Dark theme</Label>
-                <Switch 
-                  id="darkTheme" 
-                  checked={settings.darkTheme} 
-                  onCheckedChange={() => handleToggle('darkTheme')}
-                />
+            <TabsContent value="appearance" className="mt-0 space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Appearance</h3>
+                <p className="text-sm text-muted-foreground">
+                  Customize how AnonyChat looks and feels.
+                </p>
               </div>
-            </div>
-          </div>
-          
-          <Separator />
-          
-          <div className="pt-4 space-y-4">
-            <Button 
-              onClick={handleSave} 
-              className="w-full"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save Changes
-            </Button>
+              
+              <div className="py-4">
+                <p className="text-muted-foreground text-center">
+                  Theme customization coming soon in the next update.
+                </p>
+              </div>
+            </TabsContent>
             
-            <Button 
-              variant="destructive" 
-              onClick={handleLogout} 
-              className="w-full"
-            >
-              <Lock className="w-4 h-4 mr-2" />
-              Log Out
-            </Button>
+            <TabsContent value="security" className="mt-0 space-y-6">
+              <div>
+                <h3 className="text-lg font-medium">Security</h3>
+                <p className="text-sm text-muted-foreground">
+                  Manage your account security and recovery options.
+                </p>
+              </div>
+              
+              <div className="py-4">
+                <p className="text-muted-foreground text-center">
+                  Security settings coming soon in the next update.
+                </p>
+              </div>
+            </TabsContent>
           </div>
-        </div>
+        </Tabs>
       </div>
     </PageTransition>
   );

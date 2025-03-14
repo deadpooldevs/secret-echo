@@ -1,17 +1,31 @@
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  // Check if user is logged in
-  const username = localStorage.getItem('username');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const username = localStorage.getItem('username');
+    setIsAuthenticated(!!username);
+  }, []);
+
+  // Show loading state while checking authentication
+  if (isAuthenticated === null) {
+    return <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>;
+  }
   
-  if (!username) {
+  if (!isAuthenticated) {
     // If not logged in, redirect to login page
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
   // If logged in, render the children components
