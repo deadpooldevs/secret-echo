@@ -13,6 +13,7 @@ interface UserAvatarProps {
 }
 
 const getInitials = (username: string): string => {
+  if (!username) return "??";
   return username.substring(0, 2).toUpperCase();
 };
 
@@ -27,12 +28,15 @@ const getRandomColor = (username: string): string => {
     'bg-indigo-100 text-indigo-600',
   ];
   
+  // Default to first color if username is undefined or empty
+  if (!username) return colors[0];
+  
   const index = username.charCodeAt(0) % colors.length;
   return colors[index];
 };
 
 const UserAvatar: React.FC<UserAvatarProps> = ({
-  username,
+  username = "",  // Provide default empty string
   status = 'offline',
   size = 'md',
   className,

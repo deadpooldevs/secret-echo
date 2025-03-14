@@ -23,7 +23,11 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) 
 
   return (
     <StaggerContainer className="space-y-1 overflow-y-auto">
-      {chats.map((chat) => (
+      {chats.filter(chat => {
+        // Filter out chats without valid participants
+        const otherUser = chat.participants.find(p => p.id !== 'current');
+        return otherUser !== undefined;
+      }).map((chat) => (
         <ChatItem
           key={chat.id}
           chat={chat}
