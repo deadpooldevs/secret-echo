@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -8,6 +7,7 @@ import { Chat, Message, generateMockChats, generateMockMessage } from '@/utils/m
 import { PageTransition } from '@/components/Transitions';
 import { toast } from "sonner";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -18,16 +18,13 @@ const Index = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
-  // Load username from localStorage once on component mount
   useEffect(() => {
     const storedUsername = localStorage.getItem('username') || 'anonymous_user';
     setUsername(storedUsername);
   }, []);
 
-  // Load chats once on component mount
   useEffect(() => {
     const loadChats = () => {
-      // Simulate loading chats from API
       const timer = setTimeout(() => {
         const mockChats = generateMockChats(15);
         setChats(mockChats);
@@ -40,12 +37,10 @@ const Index = () => {
     loadChats();
   }, []);
   
-  // Load messages when active chat changes
   const loadMessages = useCallback((chatId: string) => {
     const activeChat = chats.find(chat => chat.id === chatId);
     if (!activeChat) return;
     
-    // Simulate loading messages for the active chat
     const mockMessages: Message[] = [];
     const messageCount = Math.floor(Math.random() * 20) + 5;
     const otherUser = activeChat.participants.find(p => p.id !== 'current');
@@ -62,7 +57,6 @@ const Index = () => {
       mockMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       setMessages(mockMessages);
       
-      // Mark messages as read
       setChats(prevChats => 
         prevChats.map(chat => 
           chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
@@ -71,7 +65,6 @@ const Index = () => {
     }
   }, [chats]);
   
-  // Effect to load messages when active chat changes
   useEffect(() => {
     if (activeChatId) {
       loadMessages(activeChatId);
@@ -84,7 +77,6 @@ const Index = () => {
   
   const handleNewChat = () => {
     toast.info("Creating a new conversation");
-    // Generate a new chat with a random user
     const newChat = generateMockChats(1)[0];
     setChats(prev => [newChat, ...prev]);
     setActiveChatId(newChat.id);
@@ -109,13 +101,12 @@ const Index = () => {
       senderId: 'current',
       receiverId: otherUser.id,
       timestamp: new Date(),
-      status: 'sent',
+      status: 'sent' as const,
       isDeleted: false
     };
     
     setMessages(prev => [...prev, newMessage]);
     
-    // Update the last message in the chat
     setChats(prevChats => 
       prevChats.map(chat => 
         chat.id === activeChatId ? { 
@@ -125,11 +116,10 @@ const Index = () => {
       )
     );
     
-    // Simulate message being delivered after 1 second
     setTimeout(() => {
       setMessages(prev => 
         prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
+          msg.id === newMessage.id ? { ...msg, status: 'delivered' as const } : msg
         )
       );
       
@@ -137,17 +127,16 @@ const Index = () => {
         prevChats.map(chat => 
           chat.id === activeChatId && chat.lastMessage?.id === newMessage.id ? { 
             ...chat, 
-            lastMessage: { ...newMessage, status: 'delivered' } 
+            lastMessage: { ...newMessage, status: 'delivered' as const } 
           } : chat
         )
       );
     }, 1000);
     
-    // Simulate message being read after 2 seconds
     setTimeout(() => {
       setMessages(prev => 
         prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
+          msg.id === newMessage.id ? { ...msg, status: 'read' as const } : msg
         )
       );
       
@@ -155,13 +144,12 @@ const Index = () => {
         prevChats.map(chat => 
           chat.id === activeChatId && chat.lastMessage?.id === newMessage.id ? { 
             ...chat, 
-            lastMessage: { ...newMessage, status: 'read' } 
+            lastMessage: { ...newMessage, status: 'read' as const } 
           } : chat
         )
       );
     }, 2000);
     
-    // Simulate reply after 3 seconds
     setTimeout(() => {
       if (Math.random() > 0.3) {
         const replyMessages = [
@@ -204,14 +192,12 @@ const Index = () => {
   };
   
   const handleDeleteMessage = (messageId: string) => {
-    // Update the message in the messages array
     setMessages(prev => 
       prev.map(msg => 
         msg.id === messageId ? { ...msg, isDeleted: true } : msg
       )
     );
     
-    // If the deleted message is the last message in the chat, update the chat
     const activeChat = chats.find(chat => chat.id === activeChatId);
     if (activeChat?.lastMessage?.id === messageId) {
       setChats(prevChats => 
@@ -239,7 +225,6 @@ const Index = () => {
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <div className={`border-r bg-background ${
           isMobile && activeChatId ? 'hidden' : 'w-full md:w-80 lg:w-96'
         }`}>
@@ -270,7 +255,6 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Message area */}
         <div className={`flex-1 bg-background ${
           isMobile && !activeChatId ? 'hidden' : 'block'
         }`}>
@@ -305,12 +289,12 @@ const Index = () => {
               <p className="text-muted-foreground">
                 Choose an existing conversation or start a new one
               </p>
-              <button 
-                className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
+              <Button 
+                className="mt-6"
                 onClick={handleNewChat}
               >
                 Start a new conversation
-              </button>
+              </Button>
             </div>
           )}
         </div>
