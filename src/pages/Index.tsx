@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -173,7 +174,7 @@ const Index = () => {
           senderId: otherUser.id,
           receiverId: 'current',
           timestamp: new Date(),
-          status: 'sent',
+          status: 'sent' as const,
           isDeleted: false
         };
         
