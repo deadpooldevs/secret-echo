@@ -111,7 +111,7 @@ const Index = () => {
           {chats.length > 0 ? (
             <ChatList 
               chats={chats} 
-              selectedChatId={selectedChat} 
+              selectedChatId={selectedChat || ''} 
               onChatSelect={setSelectedChat} 
             />
           ) : (
@@ -140,7 +140,10 @@ const Index = () => {
         </div>
         
         {selectedChat ? (
-          <MessageContainer chatId={selectedChat} username={username} />
+          <MessageContainer 
+            chatId={selectedChat} 
+            username={username} 
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center">

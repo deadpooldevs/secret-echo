@@ -6,11 +6,11 @@ import { StaggerContainer } from './Transitions';
 
 interface ChatListProps {
   chats: Chat[];
-  activeChat?: string;
-  onSelectChat: (chatId: string) => void;
+  selectedChatId?: string;
+  onChatSelect: (chatId: string) => void;
 }
 
-const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) => {
+const ChatList: React.FC<ChatListProps> = ({ chats, selectedChatId, onChatSelect }) => {
   if (chats.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4 text-center text-muted-foreground">
@@ -31,8 +31,8 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) 
         <ChatItem
           key={chat.id}
           chat={chat}
-          isActive={chat.id === activeChat}
-          onClick={() => onSelectChat(chat.id)}
+          isActive={chat.id === selectedChatId}
+          onClick={() => onChatSelect(chat.id)}
         />
       ))}
     </StaggerContainer>
