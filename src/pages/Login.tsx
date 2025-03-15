@@ -58,12 +58,14 @@ const Login = () => {
     
     try {
       if (isSignUp) {
-        // Check if username is already taken (for non-email auth)
+        // Check if username is already taken
         if (username) {
-          const { data: existingUsers } = await supabase
+          const { data: existingUsers, error: queryError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('username')
             .eq('username', username);
+            
+          if (queryError) throw queryError;
             
           if (existingUsers && existingUsers.length > 0) {
             toast.error('Username is already taken');
@@ -98,12 +100,17 @@ const Login = () => {
         if (error) throw error;
         
         // Get user's profile data
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('username')
           .eq('id', data.user.id)
           .single();
           
+        if (profileError && profileError.code !== 'PGRST116') {
+          // PGRST116 is the error code for "no rows returned"
+          throw profileError;
+        }
+        
         localStorage.setItem('username', profileData?.username || email.split('@')[0]);
         toast.success('Logged in successfully');
         navigate('/');
