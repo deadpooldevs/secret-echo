@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, Settings, Menu, X } from 'lucide-react';
 import UserAvatar from './UserAvatar';
+import ThemeToggle from './ThemeToggle';
 import { cn } from '@/lib/utils';
 import { SlideUp } from './Transitions';
 import { useNavigate } from 'react-router-dom';
@@ -72,6 +73,8 @@ const Navbar: React.FC<NavbarProps> = ({ username, onNewChat, onSettings }) => {
               >
                 <Settings size={18} />
               </button>
+              
+              <ThemeToggle />
             </div>
           </div>
         </div>

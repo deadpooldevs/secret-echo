@@ -1,14 +1,15 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import ChatList from '@/components/ChatList';
 import MessageContainer from '@/components/MessageContainer';
-import { Chat, Message, generateMockChats, generateMockMessage } from '@/utils/messageUtils';
+import { Chat, Message } from '@/utils/messageUtils';
 import { PageTransition } from '@/components/Transitions';
 import { toast } from "sonner";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -20,67 +21,31 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username') || 'anonymous_user';
-    setUsername(storedUsername);
-  }, []);
-
-  useEffect(() => {
-    const loadChats = () => {
-      const timer = setTimeout(() => {
-        const mockChats = generateMockChats(15);
-        setChats(mockChats);
-        setLoading(false);
-      }, 500);
+    const fetchUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       
-      return () => clearTimeout(timer);
+      if (session) {
+        const { user } = session;
+        const storedUsername = localStorage.getItem('username') || user.email || 'anonymous_user';
+        setUsername(storedUsername);
+      } else {
+        const storedUsername = localStorage.getItem('username') || 'anonymous_user';
+        setUsername(storedUsername);
+      }
+
+      setLoading(false);
     };
 
-    loadChats();
+    fetchUserProfile();
   }, []);
-  
-  const loadMessages = useCallback((chatId: string) => {
-    const activeChat = chats.find(chat => chat.id === chatId);
-    if (!activeChat) return;
-    
-    const mockMessages: Message[] = [];
-    const messageCount = Math.floor(Math.random() * 20) + 5;
-    const otherUser = activeChat.participants.find(p => p.id !== 'current');
-    
-    if (otherUser) {
-      for (let i = 0; i < messageCount; i++) {
-        if (Math.random() > 0.5) {
-          mockMessages.push(generateMockMessage('current', otherUser.id));
-        } else {
-          mockMessages.push(generateMockMessage(otherUser.id, 'current'));
-        }
-      }
-      
-      mockMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-      setMessages(mockMessages);
-      
-      setChats(prevChats => 
-        prevChats.map(chat => 
-          chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-        )
-      );
-    }
-  }, [chats]);
-  
-  useEffect(() => {
-    if (activeChatId) {
-      loadMessages(activeChatId);
-    }
-  }, [activeChatId, loadMessages]);
-  
+
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
   };
   
   const handleNewChat = () => {
     toast.info("Creating a new conversation");
-    const newChat = generateMockChats(1)[0];
-    setChats(prev => [newChat, ...prev]);
-    setActiveChatId(newChat.id);
+    // We'll implement real chat creation with Supabase later
   };
   
   const handleSettings = () => {
@@ -108,6 +73,7 @@ const Index = () => {
     
     setMessages(prev => [...prev, newMessage]);
     
+    // Update in the chats list
     setChats(prevChats => 
       prevChats.map(chat => 
         chat.id === activeChatId ? { 
@@ -116,7 +82,8 @@ const Index = () => {
         } : chat
       )
     );
-    
+
+    // Update message status after delay (simulate delivery)
     setTimeout(() => {
       setMessages(prev => 
         prev.map(msg => 
@@ -133,63 +100,6 @@ const Index = () => {
         )
       );
     }, 1000);
-    
-    setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'read' as const } : msg
-        )
-      );
-      
-      setChats(prevChats => 
-        prevChats.map(chat => 
-          chat.id === activeChatId && chat.lastMessage?.id === newMessage.id ? { 
-            ...chat, 
-            lastMessage: { ...newMessage, status: 'read' as const } 
-          } : chat
-        )
-      );
-    }, 2000);
-    
-    setTimeout(() => {
-      if (Math.random() > 0.3) {
-        const replyMessages = [
-          "That's interesting!",
-          "I see what you mean.",
-          "Thanks for sharing that.",
-          "I'll think about it.",
-          "Great point!",
-          "What else is on your mind?",
-          "I appreciate you telling me.",
-          "That makes sense.",
-          "I hadn't thought of it that way.",
-          "Let's discuss this more."
-        ];
-        
-        const replyContent = replyMessages[Math.floor(Math.random() * replyMessages.length)];
-        
-        const replyMessage: Message = {
-          id: `msg_${Date.now()}`,
-          content: replyContent,
-          senderId: otherUser.id,
-          receiverId: 'current',
-          timestamp: new Date(),
-          status: 'sent' as const,
-          isDeleted: false
-        };
-        
-        setMessages(prev => [...prev, replyMessage]);
-        
-        setChats(prevChats => 
-          prevChats.map(chat => 
-            chat.id === activeChatId ? { 
-              ...chat, 
-              lastMessage: replyMessage 
-            } : chat
-          )
-        );
-      }
-    }, 3000);
   };
   
   const handleDeleteMessage = (messageId: string) => {
@@ -286,9 +196,9 @@ const Index = () => {
                   <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-medium mb-2">Select a chat to start messaging</h2>
+              <h2 className="text-2xl font-medium mb-2">No conversations yet</h2>
               <p className="text-muted-foreground">
-                Choose an existing conversation or start a new one
+                Start a new conversation to begin chatting
               </p>
               <Button 
                 className="mt-6"
