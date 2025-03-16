@@ -8,9 +8,12 @@ import { toast } from "sonner";
 import { PageTransition } from '@/components/Transitions';
 import ProfileForm from '@/components/ProfileForm';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/hooks/use-theme';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   
   const handleLogout = async () => {
     try {
@@ -122,14 +125,12 @@ const Settings = () => {
                       Choose your preferred theme
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => document.documentElement.classList.add('theme-toggle-active')}
-                    >
-                      Change Theme
-                    </Button>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">Light</span>
+                      <ThemeToggle />
+                      <span className="text-sm">Dark</span>
+                    </div>
                   </div>
                 </div>
               </div>
