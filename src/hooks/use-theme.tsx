@@ -33,30 +33,31 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
+    
+    // Remove previous theme classes
     root.classList.remove("light", "dark");
 
+    // Apply theme class
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
         : "light";
-      root.classList.add(systemTheme);
       
-      // Apply the greyish-blue theme
-      root.style.setProperty('--background', systemTheme === 'dark' ? 'hsl(215, 15%, 12%)' : 'hsl(210, 20%, 98%)');
-      root.style.setProperty('--foreground', systemTheme === 'dark' ? 'hsl(210, 10%, 80%)' : 'hsl(215, 12%, 25%)');
-      root.style.setProperty('--primary', 'hsl(210, 70%, 55%)');
-      root.style.setProperty('--primary-foreground', 'hsl(0, 0%, 98%)');
-      root.style.setProperty('--card', systemTheme === 'dark' ? 'hsl(215, 15%, 15%)' : 'hsl(0, 0%, 100%)');
-      root.style.setProperty('--card-foreground', systemTheme === 'dark' ? 'hsl(210, 10%, 80%)' : 'hsl(215, 12%, 25%)');
-      root.style.setProperty('--secondary', systemTheme === 'dark' ? 'hsl(215, 15%, 18%)' : 'hsl(210, 20%, 94%)');
-      return;
+      root.classList.add(systemTheme);
+      applyThemeColors(systemTheme === "dark");
+    } else {
+      root.classList.add(theme);
+      applyThemeColors(theme === "dark");
     }
+  }, [theme]);
 
-    root.classList.add(theme);
+  // Helper function to apply the greyish-blue theme colors
+  function applyThemeColors(isDark: boolean) {
+    const root = window.document.documentElement;
     
-    // Apply the greyish-blue theme
-    if (theme === 'dark') {
+    if (isDark) {
+      // Dark mode greyish-blue theme
       root.style.setProperty('--background', 'hsl(215, 15%, 12%)');
       root.style.setProperty('--foreground', 'hsl(210, 10%, 80%)');
       root.style.setProperty('--primary', 'hsl(210, 70%, 55%)');
@@ -68,7 +69,11 @@ export function ThemeProvider({
       root.style.setProperty('--muted-foreground', 'hsl(215, 8%, 65%)');
       root.style.setProperty('--accent', 'hsl(215, 20%, 20%)');
       root.style.setProperty('--accent-foreground', 'hsl(210, 10%, 80%)');
+      root.style.setProperty('--border', 'hsl(215, 15%, 25%)');
+      root.style.setProperty('--input', 'hsl(215, 15%, 25%)');
+      root.style.setProperty('--ring', 'hsl(210, 70%, 40%)');
     } else {
+      // Light mode greyish-blue theme
       root.style.setProperty('--background', 'hsl(210, 20%, 98%)');
       root.style.setProperty('--foreground', 'hsl(215, 12%, 25%)');
       root.style.setProperty('--primary', 'hsl(210, 70%, 55%)');
@@ -80,8 +85,11 @@ export function ThemeProvider({
       root.style.setProperty('--muted-foreground', 'hsl(215, 8%, 50%)');
       root.style.setProperty('--accent', 'hsl(210, 20%, 90%)');
       root.style.setProperty('--accent-foreground', 'hsl(215, 12%, 25%)');
+      root.style.setProperty('--border', 'hsl(215, 8%, 90%)');
+      root.style.setProperty('--input', 'hsl(215, 8%, 90%)');
+      root.style.setProperty('--ring', 'hsl(210, 70%, 60%)');
     }
-  }, [theme]);
+  }
 
   const value = {
     theme,
