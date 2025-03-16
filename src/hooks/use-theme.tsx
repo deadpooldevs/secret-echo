@@ -43,13 +43,13 @@ export function ThemeProvider({
       root.classList.add(systemTheme);
       
       // Apply the greyish-blue theme
-      root.style.setProperty('--background', systemTheme === 'dark' ? 'hsl(222, 14%, 12%)' : 'hsl(210, 20%, 98%)');
-      root.style.setProperty('--foreground', systemTheme === 'dark' ? 'hsl(210, 10%, 80%)' : 'hsl(222, 14%, 20%)');
+      root.style.setProperty('--background', systemTheme === 'dark' ? 'hsl(215, 15%, 12%)' : 'hsl(210, 20%, 98%)');
+      root.style.setProperty('--foreground', systemTheme === 'dark' ? 'hsl(210, 10%, 80%)' : 'hsl(215, 12%, 25%)');
       root.style.setProperty('--primary', 'hsl(210, 70%, 55%)');
       root.style.setProperty('--primary-foreground', 'hsl(0, 0%, 98%)');
-      root.style.setProperty('--card', systemTheme === 'dark' ? 'hsl(222, 14%, 15%)' : 'hsl(0, 0%, 100%)');
-      root.style.setProperty('--card-foreground', systemTheme === 'dark' ? 'hsl(210, 10%, 80%)' : 'hsl(222, 14%, 20%)');
-      root.style.setProperty('--secondary', systemTheme === 'dark' ? 'hsl(222, 14%, 18%)' : 'hsl(210, 20%, 94%)');
+      root.style.setProperty('--card', systemTheme === 'dark' ? 'hsl(215, 15%, 15%)' : 'hsl(0, 0%, 100%)');
+      root.style.setProperty('--card-foreground', systemTheme === 'dark' ? 'hsl(210, 10%, 80%)' : 'hsl(215, 12%, 25%)');
+      root.style.setProperty('--secondary', systemTheme === 'dark' ? 'hsl(215, 15%, 18%)' : 'hsl(210, 20%, 94%)');
       return;
     }
 
@@ -57,21 +57,29 @@ export function ThemeProvider({
     
     // Apply the greyish-blue theme
     if (theme === 'dark') {
-      root.style.setProperty('--background', 'hsl(222, 14%, 12%)');
+      root.style.setProperty('--background', 'hsl(215, 15%, 12%)');
       root.style.setProperty('--foreground', 'hsl(210, 10%, 80%)');
       root.style.setProperty('--primary', 'hsl(210, 70%, 55%)');
       root.style.setProperty('--primary-foreground', 'hsl(0, 0%, 98%)');
-      root.style.setProperty('--card', 'hsl(222, 14%, 15%)');
+      root.style.setProperty('--card', 'hsl(215, 15%, 15%)');
       root.style.setProperty('--card-foreground', 'hsl(210, 10%, 80%)');
-      root.style.setProperty('--secondary', 'hsl(222, 14%, 18%)');
+      root.style.setProperty('--secondary', 'hsl(215, 15%, 18%)');
+      root.style.setProperty('--muted', 'hsl(215, 15%, 20%)');
+      root.style.setProperty('--muted-foreground', 'hsl(215, 8%, 65%)');
+      root.style.setProperty('--accent', 'hsl(215, 20%, 20%)');
+      root.style.setProperty('--accent-foreground', 'hsl(210, 10%, 80%)');
     } else {
       root.style.setProperty('--background', 'hsl(210, 20%, 98%)');
-      root.style.setProperty('--foreground', 'hsl(222, 14%, 20%)');
+      root.style.setProperty('--foreground', 'hsl(215, 12%, 25%)');
       root.style.setProperty('--primary', 'hsl(210, 70%, 55%)');
       root.style.setProperty('--primary-foreground', 'hsl(0, 0%, 98%)');
       root.style.setProperty('--card', 'hsl(0, 0%, 100%)');
-      root.style.setProperty('--card-foreground', 'hsl(222, 14%, 20%)');
+      root.style.setProperty('--card-foreground', 'hsl(215, 12%, 25%)');
       root.style.setProperty('--secondary', 'hsl(210, 20%, 94%)');
+      root.style.setProperty('--muted', 'hsl(210, 20%, 92%)');
+      root.style.setProperty('--muted-foreground', 'hsl(215, 8%, 50%)');
+      root.style.setProperty('--accent', 'hsl(210, 20%, 90%)');
+      root.style.setProperty('--accent-foreground', 'hsl(215, 12%, 25%)');
     }
   }, [theme]);
 

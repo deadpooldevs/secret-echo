@@ -39,26 +39,6 @@ const Login = () => {
     };
   }, [navigate]);
 
-  const handleAnonymousLogin = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      
-      if (error) throw error;
-      
-      // Generate a random username for anonymous users
-      const anonymousUsername = `anonymous_${Math.random().toString(36).substring(2, 10)}`;
-      localStorage.setItem('username', anonymousUsername);
-      
-      toast.success('Logged in anonymously');
-      navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to login anonymously');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleGoogleLogin = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -184,16 +164,6 @@ const Login = () => {
                     />
                   </svg>
                   Continue with Google
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={handleAnonymousLogin}
-                  disabled={loading}
-                >
-                  <ShieldCheck className="h-5 w-5 mr-2" />
-                  Continue Anonymously
                 </Button>
                 
                 <div className="relative my-3">

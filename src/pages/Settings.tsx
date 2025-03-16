@@ -7,14 +7,23 @@ import { ArrowLeft, LogOut, Shield, BellRing, Palette, Lock, User } from 'lucide
 import { toast } from "sonner";
 import { PageTransition } from '@/components/Transitions';
 import ProfileForm from '@/components/ProfileForm';
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const navigate = useNavigate();
   
-  const handleLogout = () => {
-    localStorage.removeItem('username');
-    toast.success('Logged out successfully');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      localStorage.removeItem('username');
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to log out');
+    }
   };
   
   const handleBack = () => {
@@ -101,14 +110,28 @@ const Settings = () => {
               <div>
                 <h3 className="text-lg font-medium">Appearance</h3>
                 <p className="text-sm text-muted-foreground">
-                  Customize how AnonyChat looks and feels.
+                  Customize how Echo looks and feels.
                 </p>
               </div>
               
-              <div className="py-4">
-                <p className="text-muted-foreground text-center">
-                  Theme customization coming soon in the next update.
-                </p>
+              <div className="py-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium">Theme</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Choose your preferred theme
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => document.documentElement.classList.add('theme-toggle-active')}
+                    >
+                      Change Theme
+                    </Button>
+                  </div>
+                </div>
               </div>
             </TabsContent>
             
