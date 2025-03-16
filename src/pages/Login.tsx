@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,29 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check for existing session
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/');
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/');
+      }
+    });
+    
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const handleAnonymousLogin = async () => {
     setLoading(true);
@@ -41,7 +64,7 @@ const Login = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: window.location.origin
         }
       });
       
