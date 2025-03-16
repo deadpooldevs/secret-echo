@@ -9,9 +9,12 @@ const ThemeToggle = () => {
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
+    console.log('Toggling theme from:', theme, 'to:', newTheme);
     setTheme(newTheme);
   };
 
+  console.log('Current theme in ThemeToggle:', theme);
+  
   return (
     <TooltipProvider>
       <Tooltip>
