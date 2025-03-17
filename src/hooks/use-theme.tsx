@@ -45,25 +45,47 @@ export function ThemeProvider({
         : "light";
       
       root.classList.add(systemTheme);
-      document.body.dataset.theme = systemTheme; // Add dataset attribute for debugging
     } else {
       root.classList.add(theme);
-      document.body.dataset.theme = theme; // Add dataset attribute for debugging
     }
-
-    // Force a body class update to trigger styles
+    
+    // Add dataset attribute for debugging
+    document.body.dataset.theme = theme === "system" 
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") 
+      : theme;
+    
+    // Force a reflow to ensure styles are applied
     document.body.classList.remove('theme-updated');
     setTimeout(() => {
       document.body.classList.add('theme-updated');
-    }, 0);
+    }, 10);
+  }, [theme]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      const handleChange = () => {
+        const root = window.document.documentElement;
+        const systemTheme = mediaQuery.matches ? "dark" : "light";
+        
+        root.classList.remove("light", "dark");
+        root.classList.add(systemTheme);
+        document.body.dataset.theme = systemTheme;
+      };
+      
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
   }, [theme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      console.log('Setting theme to:', theme);
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      console.log('Setting theme to:', newTheme);
+      localStorage.setItem(storageKey, newTheme);
+      setTheme(newTheme);
     },
   };
 

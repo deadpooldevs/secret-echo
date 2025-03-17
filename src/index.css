@@ -98,7 +98,7 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: a6px;
   height: 6px;
 }
 
@@ -170,4 +170,19 @@
 /* Theme transition */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Theme debugging */
+body:after {
+  content: attr(data-theme);
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  border-radius: 4px;
+  z-index: 9999;
+  opacity: 0.7;
 }
