@@ -17,7 +17,6 @@ const Login = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check for existing session
     const checkSession = async () => {
       const {
         data
@@ -28,7 +27,6 @@ const Login = () => {
     };
     checkSession();
 
-    // Set up auth state change listener
     const {
       data: authListener
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -63,7 +61,6 @@ const Login = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        // Check if username is already taken
         if (username) {
           const {
             data: existingUsers,
@@ -77,7 +74,6 @@ const Login = () => {
           }
         }
 
-        // Sign up with email
         const {
           data,
           error
@@ -94,7 +90,6 @@ const Login = () => {
         localStorage.setItem('username', username || email.split('@')[0]);
         toast.success('Account created successfully! Please check your email to confirm your account.');
       } else {
-        // Sign in with email
         const {
           data,
           error
@@ -104,13 +99,11 @@ const Login = () => {
         });
         if (error) throw error;
 
-        // Get user's profile data
         const {
           data: profileData,
           error: profileError
         } = await supabase.from('profiles').select('username').eq('id', data.user.id).single();
         if (profileError && profileError.code !== 'PGRST116') {
-          // PGRST116 is the error code for "no rows returned"
           throw profileError;
         }
         localStorage.setItem('username', profileData?.username || email.split('@')[0]);
