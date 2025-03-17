@@ -50,6 +50,12 @@ export function ThemeProvider({
       root.classList.add(theme);
       document.body.dataset.theme = theme; // Add dataset attribute for debugging
     }
+
+    // Force a body class update to trigger styles
+    document.body.classList.remove('theme-updated');
+    setTimeout(() => {
+      document.body.classList.add('theme-updated');
+    }, 0);
   }, [theme]);
 
   const value = {
