@@ -6,6 +6,8 @@ import { PageTransition } from '@/components/Transitions';
 import { Check, ShieldCheck, Zap, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { Separator } from '@/components/ui/separator';
+
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -13,6 +15,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
   useEffect(() => {
     // Check for existing session
     const checkSession = async () => {
@@ -37,6 +40,7 @@ const Login = () => {
       authListener.subscription.unsubscribe();
     };
   }, [navigate]);
+
   const handleGoogleLogin = async () => {
     try {
       const {
@@ -53,6 +57,7 @@ const Login = () => {
       toast.error(error.message || 'Failed to login with Google');
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -118,6 +123,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+
   return <PageTransition className="min-h-screen flex flex-col">
       <div className="flex flex-1">
         <div className="w-full md:w-1/2 px-6 py-12 lg:px-8 xl:px-12 flex flex-col justify-center">
@@ -145,7 +151,11 @@ const Login = () => {
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
                   </div>
-                  
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      OR CONTINUE WITH
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -247,4 +257,5 @@ const Login = () => {
       </footer>
     </PageTransition>;
 };
+
 export default Login;
